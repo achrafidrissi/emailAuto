@@ -10,7 +10,9 @@ module.exports = async function (req, res) {
 
     // Wait until the full request body is received
     await new Promise((resolve) => req.on("end", resolve));
-    const { email, subject, message } = JSON.parse(req.body);
+
+    // Parse the JSON body properly
+    const { email, subject, message } = JSON.parse(body); // ✅ Corrected
 
     // Configure SMTP transporter with Gmail SMTP settings
     const transporter = nodemailer.createTransport({
@@ -34,9 +36,11 @@ module.exports = async function (req, res) {
       text: message,
     });
 
-    return res.json({ success: true, message: "✅ Email sent successfully!" });
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ success: true, message: "✅ Email sent successfully!" }));
   } catch (error) {
     console.error("Email sending failed:", error.message);
-    return res.json({ success: false, error: error.message }, 500);
+    res.writeHead(500, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ success: false, error: error.message }));
   }
-}
+};
