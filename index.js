@@ -4,27 +4,31 @@ export default async function (req, res) {
   try {
     const { email, subject, message } = JSON.parse(req.body);
 
-    // SMTP Configuration
+    // Configure SMTP transporter with Gmail SMTP settings
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST, // Example: smtp.gmail.com
-      port: process.env.SMTP_PORT, // Example: 587
-      secure: false, // Use `true` for port 465, `false` for 587
+      host: "smtp.gmail.com",
+      port: 587, // TLS port
+      secure: false, // Must be false for TLS (587)
       auth: {
-        user: process.env.SMTP_USER, // SMTP Username
-        pass: process.env.SMTP_PASS, // SMTP Password
+        user: process.env.SMTP_USER, // Your Gmail address
+        pass: process.env.SMTP_PASS, // Your Gmail App Password (not normal password)
+      },
+      tls: {
+        rejectUnauthorized: false, // Allow self-signed certificates
       },
     });
 
     // Send Email
     await transporter.sendMail({
-      from: process.env.SMTP_USER,
+      from: `"${process.env.SENDER_NAME}" <${process.env.SMTP_USER}>`, // Sender Name & Email
       to: email,
       subject: subject,
       text: message,
     });
 
-    return res.json({ success: true, message: "Email sent successfully!" });
+    return res.json({ success: true, message: "✅ Email sent successfully!" });
   } catch (error) {
+    console.error("Email sending failed:", error.message);
     return res.json({ success: false, error: error.message }, 500);
   }
 }
