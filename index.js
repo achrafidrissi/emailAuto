@@ -1,18 +1,9 @@
 const nodemailer = require("nodemailer");
 
-module.exports = async function (req) {
+module.exports = async function (context) {
   try {
-    // Read the raw request body
-    let body = "";
-    req.on("data", (chunk) => {
-      body += chunk;
-    });
-
-    // Wait until the full request body is received
-    await new Promise((resolve) => req.on("end", resolve));
-
-    // Parse the JSON body properly
-    const { email, subject, message } = JSON.parse(body);
+    // Parse the request body directly (Appwrite provides it as a string)
+    const { email, subject, message } = JSON.parse(context.req.body);
 
     // Configure SMTP transporter with Gmail SMTP settings
     const transporter = nodemailer.createTransport({
@@ -36,12 +27,17 @@ module.exports = async function (req) {
       text: message,
     });
 
+    // Log success in Appwrite logs
+    context.log("✅ Email sent successfully!");
+
     return {
       statusCode: 200,
       body: JSON.stringify({ success: true, message: "✅ Email sent successfully!" }),
     };
   } catch (error) {
-    console.error("Email sending failed:", error.message);
+    // Log the error for debugging
+    context.error("Email sending failed:", error.message);
+
     return {
       statusCode: 500,
       body: JSON.stringify({ success: false, error: error.message }),
