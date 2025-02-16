@@ -2,6 +2,14 @@ const nodemailer = require("nodemailer");
 
 module.exports = async function (req, res) {
   try {
+    // Read the raw request body
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+
+    // Wait until the full request body is received
+    await new Promise((resolve) => req.on("end", resolve));
     const { email, subject, message } = JSON.parse(req.body);
 
     // Configure SMTP transporter with Gmail SMTP settings
