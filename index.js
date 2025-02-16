@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 
-module.exports = async function (req, res) {
+module.exports = async function (req) {
   try {
     // Read the raw request body
     let body = "";
@@ -12,7 +12,7 @@ module.exports = async function (req, res) {
     await new Promise((resolve) => req.on("end", resolve));
 
     // Parse the JSON body properly
-    const { email, subject, message } = JSON.parse(body); // ✅ Corrected
+    const { email, subject, message } = JSON.parse(body);
 
     // Configure SMTP transporter with Gmail SMTP settings
     const transporter = nodemailer.createTransport({
@@ -36,11 +36,15 @@ module.exports = async function (req, res) {
       text: message,
     });
 
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ success: true, message: "✅ Email sent successfully!" }));
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ success: true, message: "✅ Email sent successfully!" }),
+    };
   } catch (error) {
     console.error("Email sending failed:", error.message);
-    res.writeHead(500, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ success: false, error: error.message }));
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ success: false, error: error.message }),
+    };
   }
 };
