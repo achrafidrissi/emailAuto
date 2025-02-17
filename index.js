@@ -2,6 +2,14 @@ const nodemailer = require("nodemailer");
 
 module.exports = async function (context) {
   try {
+
+    // Vérifier et afficher le JSON reçu
+    context.log("🟡 JSON Reçu :", context.req.body);
+
+    if (!context.req.body) {
+      throw new Error("❌ context.req.body est undefined !");
+    }
+    
     // Parse the request body directly (Appwrite provides it as a string)
     const { email, subject, message } = JSON.parse(context.req.body);
 
